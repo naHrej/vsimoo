@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LambdaMOO Chat</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+        #output {
+            flex: 1;
+            margin-bottom: 10px;
+            background-color: var(--vscode-editor-background);
+            color: var(--vscode-editor-foreground);
+            padding: 10px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: var(--vscode-editor-font-family);
+        }
+        #input {
+            width: 100%;
+            padding: 5px;
+            background-color: var(--vscode-input-background);
+            color: var(--vscode-input-foreground);
+            border: 1px solid var(--vscode-input-border);
+            font-family: var(--vscode-editor-font-family);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/less@4.1.1/dist/less.min.js"></script>
+</head>
+<body>
+    <div id="output"></div>
+    <input type="text" id="input" placeholder="Type your command here...">
+    <script>
+        const vscode = acquireVsCodeApi();
+        const outputDiv = document.getElementById('output');
+        const inputField = document.getElementById('input');
+
+        window.addEventListener('message', event => {
+            const message = event.data;
+            switch (message.command) {
+                case 'addOutput':
+                    outputDiv.innerHTML += message.html + '<br>';
+                    outputDiv.scrollTop = outputDiv.scrollHeight;
+                    break;
+                case 'echo':
+                    outputDiv.innerHTML += '> ' + message.text + '<br>';
+                    outputDiv.scrollTop = outputDiv.scrollHeight;
+                    break;
+                case 'loadStyle':
+                    loadStyle(message.content);
+                    break;
+            }
+        });
+
+        inputField.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                console.log('Enter pressed');
+                const text = inputField.value;
+                vscode.postMessage({ command: 'sendCommand', text });
+                inputField.value = '';
+            }
+        });
+
+        function loadStyle(content) {
+            less.render(content, (e, output) => {
+                if (e) {
+                    console.error('Error compiling LESS:', e);
+                    return;
+                }
+                const style = document.createElement('style');
+                style.innerHTML = output.css;
+                document.head.appendChild(style);
+                console.log('Style loaded');
+            });
+        }
+    </script>
+</body>
+</html>
