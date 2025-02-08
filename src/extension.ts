@@ -15,11 +15,6 @@ export function activate(context: vscode.ExtensionContext) {
             currentPanel.reveal(vscode.ViewColumn.Two);
         } else {
             currentPanel = ChatPanel.createOrShow(context.extensionUri);
-            // currentPanel.setSendCommandCallback((command: string) => {
-            //     if (currentConnection) {
-            //         currentConnection.sendCommand(command);
-            //     }
-            // });
             currentConnection = new MooConnection(host, port);
             
             currentConnection.onData((data) => {
